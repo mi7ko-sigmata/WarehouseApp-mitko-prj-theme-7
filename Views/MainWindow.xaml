@@ -1,0 +1,234 @@
+<Window x:Class="WarehouseApp.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Складов контрол – Складови артикули"
+        Height="740" Width="1120" MinHeight="600" MinWidth="900"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.Resources>
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,3"/>
+        </Style>
+        <Style x:Key="FieldBox" TargetType="TextBox">
+            <Setter Property="Padding" Value="4"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
+        </Style>
+        <Style x:Key="ActionButton" TargetType="Button">
+            <Setter Property="Padding" Value="16,6"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
+            <Setter Property="MinWidth" Value="130"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Предупредителен банер -->
+        <Border Grid.Row="0" Margin="10,10,10,0" Padding="12,10" CornerRadius="6" BorderThickness="1">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Background" Value="#E8F5E9"/>
+                    <Setter Property="BorderBrush" Value="#66BB6A"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding HasLowStock}" Value="True">
+                            <Setter Property="Background" Value="#FFE0B2"/>
+                            <Setter Property="BorderBrush" Value="#FB8C00"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <DockPanel LastChildFill="True">
+                <CheckBox DockPanel.Dock="Right" VerticalAlignment="Center" Margin="20,0,0,0"
+                          Content="Покажи само артикули под минимума"
+                          IsChecked="{Binding ShowOnlyLow}"/>
+                <TextBlock Text="{Binding BannerText}" FontSize="15" FontWeight="Bold"
+                           VerticalAlignment="Center" TextWrapping="Wrap"/>
+            </DockPanel>
+        </Border>
+
+        <TabControl Grid.Row="1" Margin="10">
+
+            <!-- АРТИКУЛИ -->
+            <TabItem Header="Складови артикули" FontSize="14">
+                <Grid Margin="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <DataGrid Grid.Row="0"
+                              ItemsSource="{Binding Products}"
+                              SelectedItem="{Binding SelectedProduct, Mode=TwoWay}"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              SelectionMode="Single"
+                              SelectionUnit="FullRow"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              GridLinesVisibility="Horizontal"
+                              HeadersVisibility="Column"
+                              Margin="0,0,0,10">
+                        <DataGrid.RowStyle>
+                            <Style TargetType="DataGridRow">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsLowStock}" Value="True">
+                                        <Setter Property="Background" Value="#FFCDB8"/>
+                                        <Setter Property="FontWeight" Value="Bold"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.RowStyle>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="№" Binding="{Binding Id}" Width="50"/>
+                            <DataGridTextColumn Header="Наименование" Binding="{Binding Name}" Width="2*"/>
+                            <DataGridTextColumn Header="Доставчик" Binding="{Binding SupplierName}" Width="1.5*"/>
+                            <DataGridTextColumn Header="Цена" Binding="{Binding Price, StringFormat={}{0:N2}}" Width="90">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Количество" Binding="{Binding Quantity}" Width="90"/>
+                            <DataGridTextColumn Header="Мин. количество" Binding="{Binding MinQuantity}" Width="120"/>
+                            <DataGridTextColumn Header="Статус" Binding="{Binding StatusText}" Width="140"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <GroupBox Grid.Row="1" Header="Данни за артикул" Padding="10">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Наименование *" Style="{StaticResource FieldLabel}"/>
+                                    <TextBox Text="{Binding ProductName, UpdateSourceTrigger=PropertyChanged}"
+                                             Style="{StaticResource FieldBox}"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="Доставчик *" Style="{StaticResource FieldLabel}"/>
+                                    <ComboBox ItemsSource="{Binding Suppliers}"
+                                              DisplayMemberPath="Name"
+                                              SelectedValuePath="Id"
+                                              SelectedValue="{Binding ProductSupplierId}"
+                                              Padding="4" Margin="0,0,10,0"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Цена *" Style="{StaticResource FieldLabel}"/>
+                                    <TextBox Text="{Binding ProductPrice, UpdateSourceTrigger=PropertyChanged}"
+                                             Style="{StaticResource FieldBox}"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="3">
+                                    <TextBlock Text="Количество *" Style="{StaticResource FieldLabel}"/>
+                                    <TextBox Text="{Binding ProductQuantity, UpdateSourceTrigger=PropertyChanged}"
+                                             Style="{StaticResource FieldBox}"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="4">
+                                    <TextBlock Text="Мин. количество *" Style="{StaticResource FieldLabel}"/>
+                                    <TextBox Text="{Binding ProductMinQuantity, UpdateSourceTrigger=PropertyChanged}"
+                                             Padding="4"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                                <Button Content="➕ Добави" Command="{Binding AddProductCommand}"
+                                        Style="{StaticResource ActionButton}"/>
+                                <Button Content="💾 Запази промените" Command="{Binding UpdateProductCommand}"
+                                        Style="{StaticResource ActionButton}"/>
+                                <Button Content="🗑 Изтрий" Command="{Binding DeleteProductCommand}"
+                                        Style="{StaticResource ActionButton}"/>
+                                <Button Content="✖ Изчисти" Command="{Binding ClearProductCommand}"
+                                        Style="{StaticResource ActionButton}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </GroupBox>
+                </Grid>
+            </TabItem>
+
+            <!-- ДОСТАВЧИЦИ -->
+            <TabItem Header="Доставчици" FontSize="14">
+                <Grid Margin="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <DataGrid Grid.Row="0"
+                              ItemsSource="{Binding Suppliers}"
+                              SelectedItem="{Binding SelectedSupplier, Mode=TwoWay}"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              SelectionMode="Single"
+                              SelectionUnit="FullRow"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              GridLinesVisibility="Horizontal"
+                              HeadersVisibility="Column"
+                              Margin="0,0,0,10">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="№" Binding="{Binding Id}" Width="50"/>
+                            <DataGridTextColumn Header="Име на фирма" Binding="{Binding Name}" Width="2*"/>
+                            <DataGridTextColumn Header="Телефон" Binding="{Binding Phone}" Width="*"/>
+                            <DataGridTextColumn Header="Имейл" Binding="{Binding Email}" Width="1.5*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <GroupBox Grid.Row="1" Header="Данни за доставчик" Padding="10">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="1.5*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Име на фирма *" Style="{StaticResource FieldLabel}"/>
+                                    <TextBox Text="{Binding SupplierName, UpdateSourceTrigger=PropertyChanged}"
+                                             Style="{StaticResource FieldBox}"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="Телефон" Style="{StaticResource FieldLabel}"/>
+                                    <TextBox Text="{Binding SupplierPhone, UpdateSourceTrigger=PropertyChanged}"
+                                             Style="{StaticResource FieldBox}"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Имейл" Style="{StaticResource FieldLabel}"/>
+                                    <TextBox Text="{Binding SupplierEmail, UpdateSourceTrigger=PropertyChanged}"
+                                             Padding="4"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                                <Button Content="➕ Добави" Command="{Binding AddSupplierCommand}"
+                                        Style="{StaticResource ActionButton}"/>
+                                <Button Content="💾 Запази промените" Command="{Binding UpdateSupplierCommand}"
+                                        Style="{StaticResource ActionButton}"/>
+                                <Button Content="🗑 Изтрий" Command="{Binding DeleteSupplierCommand}"
+                                        Style="{StaticResource ActionButton}"/>
+                                <Button Content="✖ Изчисти" Command="{Binding ClearSupplierCommand}"
+                                        Style="{StaticResource ActionButton}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </GroupBox>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>
